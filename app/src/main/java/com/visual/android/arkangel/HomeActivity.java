@@ -11,6 +11,7 @@ import android.location.Criteria;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.PersistableBundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
@@ -19,11 +20,14 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ListView;
 
 import com.firebase.ui.auth.AuthUI;
 import com.firebase.ui.auth.IdpResponse;
 import com.google.android.gms.location.places.Place;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -68,6 +72,21 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
+        Button mSignOutButton = findViewById(R.id.sign_out);
+        mSignOutButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                AuthUI.getInstance()
+                        .signOut(HomeActivity.this)
+                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+                            public void onComplete(@NonNull Task<Void> task) {
+                                // ...
+                                startActivity(new Intent(HomeActivity.this, SignInActivity.class));
+                            }
+                        });
+            }
+        });
+
         paths = new ArrayList<>();
 //        paths.add(new Path(new Location("1", "2", "Test", 4, 2),
 //                new Location("1", "2", "Test2", 4, 5)));
@@ -77,8 +96,15 @@ public class HomeActivity extends AppCompatActivity {
 
         homeAdapter.notifyDataSetChanged();
 
-        DatabaseReference mPostReference = FirebaseDatabase.getInstance().getReference();
-        ValueEventListener postListener = new ValueEventListener() {
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        DatabaseReference mUserWalkerReference = FirebaseDatabase.getInstance().getReference("users")
+                .child(user.getUid()).child("walker-paths");
+        DatabaseReference mUserAngelReference = FirebaseDatabase.getInstance().getReference("users")
+                .child(user.getUid()).child("angel-paths");
+        DatabaseReference mPathsReference = FirebaseDatabase.getInstance().getReference("paths");
+        ValueEventListener singleListner = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 paths.clear();
@@ -100,7 +126,23 @@ public class HomeActivity extends AppCompatActivity {
                 // ...
             }
         };
-        mPostReference.addValueEventListener(postListener);
+
+        ValueEventListener postListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                System.out.println(dataSnapshot.getValue());
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Getting Post failed, log a message
+                Log.w("TAG", "loadPost:onCancelled", databaseError.toException());
+                // ...
+            }
+        };
+
+        mUserWalkerReference.addListenerForSingleValueEvent(singleListner);
+        mUserAngelReference.addValueEventListener(postListener);
 
     }
 

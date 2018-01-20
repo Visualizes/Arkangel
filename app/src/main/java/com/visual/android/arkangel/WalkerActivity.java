@@ -18,9 +18,13 @@ import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -51,9 +55,9 @@ public class WalkerActivity extends AppCompatActivity {
         mDestEdit = findViewById(R.id.destination_edit);
         mDestEdit.setInputType(InputType.TYPE_NULL);
 
-        uniqueID = UUID.randomUUID().toString();
+        uniqueID = UUID.randomUUID().toString().split("-")[0];
         TextView mCode = findViewById(R.id.code);
-        mCode.setText(uniqueID.split("-")[0]);
+        mCode.setText(uniqueID);
 
         mHomeEdit.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -99,9 +103,25 @@ public class WalkerActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if (home != null && destination != null) {
                     FirebaseDatabase database = FirebaseDatabase.getInstance();
-                    DatabaseReference myRef = database.getReference(uniqueID.split("-")[0]);
+                    FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+//                    List<String> ids = new ArrayList<>();
+//                    ids.add(uniqueID);
+//                    DatabaseReference myRef = database.getReference("paths")
+//                            .child(uniqueID);
+//                    myRef.child("home").setValue(home);
+//                    myRef.child("destination").setValue(destination);
+//                    myRef.child("walker").setValue(user.getUid());
+//                    myRef = database.getReference("users").child(user.getUid()).child("paths").child(uniqueID);
+//                    myRef.setValue("walker");
+
+                    DatabaseReference myRef = database.getReference("users")
+                            .child(user.getUid()).child("walker-paths").child(uniqueID);
                     myRef.child("home").setValue(home);
                     myRef.child("destination").setValue(destination);
+
+                    myRef = database.getReference("paths").child(uniqueID);
+                    myRef.setValue(0);
+
                     startActivity(new Intent(WalkerActivity.this, HomeActivity.class));
                 }
 
