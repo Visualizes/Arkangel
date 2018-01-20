@@ -5,8 +5,13 @@ package com.visual.android.arkangel;
  */
 
 public class Path {
+
     private Location home;
     private Location destination;
+    private boolean madeItToDestination = false;
+    private boolean madeItHome = false;
+    private String[] angelIDs;
+    private String walkerID;
 
     public Path(Location home, Location destination) {
         this.home = home;

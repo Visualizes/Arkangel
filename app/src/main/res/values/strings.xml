@@ -6,4 +6,5 @@
     <string name="title_activity_choice">Choice</string>
     <string name="title_activity_walker">Walker</string>
     <string name="title_activity_angel">Angel</string>
+    <string name="title_activity_sign_in">Sign In</string>
 </resources>
