@@ -34,8 +34,8 @@ public class WalkerActivity extends AppCompatActivity {
     private EditText mHomeEdit;
     private EditText mDestEdit;
     private String uniqueID;
-    private Place home = null;
-    private Place destination = null;
+    private Location home = null;
+    private Location destination = null;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -58,7 +58,7 @@ public class WalkerActivity extends AppCompatActivity {
         mHomeEdit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-               openPlaceAutoComplete(HOME_AUTOCOMPLETE_REQUEST_CODE);
+                openPlaceAutoComplete(HOME_AUTOCOMPLETE_REQUEST_CODE);
             }
         });
 
@@ -131,11 +131,21 @@ public class WalkerActivity extends AppCompatActivity {
             switch (requestCode) {
                 case HOME_AUTOCOMPLETE_REQUEST_CODE:
                     mHomeEdit.setText(place.getName());
-                    home = place;
+                    home = new Location(
+                            place.getId(),
+                            place.getName().toString(),
+                            place.getAddress().toString(),
+                            place.getLatLng().latitude,
+                            place.getLatLng().latitude);
                     break;
                 case DEST_AUTOCOMPLETE_REQUEST_CODE:
                     mDestEdit.setText(place.getName());
-                    destination = place;
+                    destination = new Location(
+                            place.getId(),
+                            place.getName().toString(),
+                            place.getAddress().toString(),
+                            place.getLatLng().latitude,
+                            place.getLatLng().latitude);
                     break;
             }
 

@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.TextView;
 
 import com.google.android.gms.location.places.Place;
 
@@ -35,6 +36,12 @@ public class HomeAdapter extends ArrayAdapter<Path> {
         final Path path = paths.get(position);
 
         if (path != null) {
+
+            TextView mHomeText = convertView.findViewById(R.id.home_text);
+            TextView mDestText = convertView.findViewById(R.id.dest_text);
+
+            mHomeText.setText(path.getHome().getName());
+            mDestText.setText(path.getDestination().getName());
 
         }
 
