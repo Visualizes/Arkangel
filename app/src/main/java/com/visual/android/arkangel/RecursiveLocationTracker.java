@@ -72,56 +72,27 @@ public class RecursiveLocationTracker extends AsyncGetLocation {
                                     android.location.Location.distanceBetween(destLat, destLng, currentLat, currentLng, destResults);
                                     android.location.Location.distanceBetween(homeLat, homeLng, currentLat, currentLng, homeResults);
 
-                                    if (destResults[0] < (200 + currentAccuracy) || homeResults[0] < (200 + currentAccuracy)) {
-                                        RecursiveLocationTracker.activePath = path;
-                                        if (destResults[0] < (200 + currentAccuracy)) {
-                                            RecursiveLocationTracker.userIsAtDest = true;
-                                            RecursiveLocationTracker.activeLocation = path.getDestination();
-                                        } else {
-                                            RecursiveLocationTracker.userIsAtHome = true;
-                                            RecursiveLocationTracker.activeLocation = path.getHome();
-                                        }
+                                    double radius = 200 + currentAccuracy;
 
-                                        System.out.println("IS IN!!");
-                                        final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                                    if (destResults[0] < radius && !RecursiveLocationTracker.userIsAtDest) {
+                                        RecursiveLocationTracker.userIsAtDest = true;
+                                        RecursiveLocationTracker.activeLocation = path.getDestination();
+                                        notifyAngel(path, "arrived at ");
+                                    } else if (destResults[0] > radius && RecursiveLocationTracker.userIsAtDest) {
+                                        RecursiveLocationTracker.userIsAtDest = false;
+                                        RecursiveLocationTracker.activeLocation = null;
+                                        notifyAngel(path, "departed ");
+                                    } else if (homeResults[0] < radius && !RecursiveLocationTracker.userIsAtHome) {
+                                        RecursiveLocationTracker.userIsAtHome = true;
+                                        RecursiveLocationTracker.activeLocation = path.getHome();
+                                        notifyAngel(path, "arrived at ");
 
-                                        DatabaseReference mUserWalkerReference = FirebaseDatabase.getInstance().getReference("paths")
-                                                .child(path.getId());
-                                        final DatabaseReference mUserReferences = FirebaseDatabase.getInstance().getReference("users");
-                                        ValueEventListener singleListener = new ValueEventListener() {
-                                            @Override
-                                            public void onDataChange(DataSnapshot dataSnapshot) {
-                                                for (DataSnapshot data : dataSnapshot.getChildren()) {
-                                                    String key = data.getKey();
-                                                    mUserReferences.child(key)
-                                                            .child("angel-paths")
-                                                            .child(path.getId())
-                                                            .child("notify")
-                                                            .setValue(true);
-
-                                                    mUserReferences.child(key)
-                                                            .child("angel-paths")
-                                                            .child(path.getId())
-                                                            .child("message")
-                                                            .setValue(user.getDisplayName() + " has arrived at " +
-                                                            RecursiveLocationTracker.activeLocation.getName());
-                                                }
-                                            }
-
-                                            @Override
-                                            public void onCancelled(DatabaseError databaseError) {
-                                                // Getting Post failed, log a message
-                                                Log.w("TAG", "loadPost:onCancelled", databaseError.toException());
-                                                // ...
-                                            }
-                                        };
-
-                                        mUserWalkerReference.addListenerForSingleValueEvent(singleListener);
-
+                                    } else if (homeResults[0] > radius && RecursiveLocationTracker.userIsAtHome) {
+                                        RecursiveLocationTracker.userIsAtHome = false;
+                                        RecursiveLocationTracker.activeLocation = null;
+                                        notifyAngel(path, "departed ");
                                     } else {
                                         System.out.println("NOT IN");
-
-
                                     }
                                 }
 
@@ -145,8 +116,56 @@ public class RecursiveLocationTracker extends AsyncGetLocation {
 
     }
 
-    private void getDeviceLocation() {
+    private boolean compareRadiusDistance(double radius, float homeDistance, float destDistance) {
+        if (RecursiveLocationTracker.userIsAtHome || RecursiveLocationTracker.userIsAtDest) {
+            // we want to know if they have left the zone they're in
+            if (destDistance > radius) { // they left the destination
+                return true;
+            } else if (homeDistance > radius) {
+                return true;
+            } else {
+                return false;
+            }
+        } else {
+            return destDistance < radius || homeDistance < radius;
+        }
+    }
 
+    private void notifyAngel(final Path path, final String arriveDepart) {
+        final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        DatabaseReference mUserWalkerReference = FirebaseDatabase.getInstance().getReference("paths")
+                .child(path.getId());
+        final DatabaseReference mUserReferences = FirebaseDatabase.getInstance().getReference("users");
+        ValueEventListener singleListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                for (DataSnapshot data : dataSnapshot.getChildren()) {
+                    String key = data.getKey();
+                    mUserReferences.child(key)
+                            .child("angel-paths")
+                            .child(path.getId())
+                            .child("notify")
+                            .setValue(true);
+
+                    mUserReferences.child(key)
+                            .child("angel-paths")
+                            .child(path.getId())
+                            .child("message")
+                            .setValue(user.getDisplayName() + " has " + arriveDepart +
+                                    RecursiveLocationTracker.activeLocation.getName());
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+                // Getting Post failed, log a message
+                Log.w("TAG", "loadPost:onCancelled", databaseError.toException());
+                // ...
+            }
+        };
+
+        mUserWalkerReference.addListenerForSingleValueEvent(singleListener);
     }
 
 

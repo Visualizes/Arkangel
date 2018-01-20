@@ -3,6 +3,7 @@ package com.visual.android.arkangel;
 import android.*;
 import android.Manifest;
 import android.app.Activity;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -174,17 +175,19 @@ public class HomeActivity extends AppCompatActivity {
                 System.out.println(dataSnapshot.getValue());
                 outerLoop:
                 for (DataSnapshot path : dataSnapshot.getChildren()) {
+                    System.out.println("=====================================================");
                     String message = null;
                     System.out.println(path);
                     for (DataSnapshot data : path.getChildren()) {
+                        System.out.println(data.getValue());
                         if (message == null) {
                             message = data.getValue().toString();
+                            continue;
                         }
                         if (data.getValue().toString().toLowerCase().equals("false")) {
                             continue outerLoop;
                         }
-                        openNotification(message);
-
+                        openNotification(message, path.getKey().toString());
                     }
                 }
             }
@@ -272,7 +275,9 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-    private void openNotification(String message) {
+    private void openNotification(String message, String key) {
+        System.out.println("OPEN NOTIFICATION");
+        System.out.println(message);
         NotificationCompat.Builder mBuilder =
                 new NotificationCompat.Builder(this)
                         .setSmallIcon(R.mipmap.ic_launcher_round)
@@ -286,5 +291,15 @@ public class HomeActivity extends AppCompatActivity {
                 (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         // Builds the notification and issues it.
         mNotifyMgr.notify(mNotificationId, mBuilder.build());
+
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        DatabaseReference mUserAngelReference = FirebaseDatabase.getInstance()
+                .getReference("users").child(user.getUid()).child("angel-paths")
+                .child(key);
+
+        mUserAngelReference.child("notify").setValue(false);
+        mUserAngelReference.child("message").setValue("");
+
     }
 }
