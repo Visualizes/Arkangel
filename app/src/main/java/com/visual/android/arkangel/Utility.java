@@ -8,7 +8,7 @@ import java.util.List;
 
 public class Utility {
 
-    public static RecursiveLocationTracker recursiveLocationTracker;
+    public static RecursiveLocationTracker recursiveLocationTracker = null;
     public static boolean firstRecursiveIteration = true;
     public static List<Path> paths;
 

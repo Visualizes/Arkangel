@@ -156,7 +156,7 @@ public class WalkerActivity extends AppCompatActivity {
                             place.getName().toString(),
                             place.getAddress().toString(),
                             place.getLatLng().latitude,
-                            place.getLatLng().latitude);
+                            place.getLatLng().longitude);
                     break;
                 case DEST_AUTOCOMPLETE_REQUEST_CODE:
                     mDestEdit.setText(place.getName());
@@ -165,7 +165,7 @@ public class WalkerActivity extends AppCompatActivity {
                             place.getName().toString(),
                             place.getAddress().toString(),
                             place.getLatLng().latitude,
-                            place.getLatLng().latitude);
+                            place.getLatLng().longitude);
                     break;
             }
 

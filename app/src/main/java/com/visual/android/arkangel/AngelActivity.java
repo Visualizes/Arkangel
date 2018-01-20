@@ -49,8 +49,8 @@ public class AngelActivity extends AppCompatActivity {
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             if (dataSnapshot.getValue() != null) {
                                 mPathsReference.child(user.getUid()).setValue(0);
-                                mUserReference.child("notifyDestination").setValue(false);
-                                mUserReference.child("notifyHome").setValue(false);
+                                mUserReference.child("notify").setValue(false);
+                                mUserReference.child("message").setValue("");
                                 startActivity(new Intent(AngelActivity.this, HomeActivity.class));
                             } else {
                                 System.out.println("DOES NOT EXIST");

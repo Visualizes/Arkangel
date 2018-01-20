@@ -6,6 +6,7 @@ package com.visual.android.arkangel;
 
 public class Path {
 
+    private String id;
     private Location home;
     private Location destination;
     private boolean madeItToDestination = false;
@@ -13,9 +14,14 @@ public class Path {
     private String[] angelIDs;
     private String walkerID;
 
-    public Path(Location home, Location destination) {
+    public Path(String id, Location home, Location destination) {
+        this.id = id;
         this.home = home;
         this.destination = destination;
+    }
+
+    public String getId() {
+        return id;
     }
 
     public Location getHome() {
@@ -24,6 +30,10 @@ public class Path {
 
     public Location getDestination() {
         return destination;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public void setHome(Location home) {
