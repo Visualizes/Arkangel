@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">Arkangel</string>
+    <string name="google_maps_key">AIzaSyAjiHDbAfpCqbriLAsrwy8OyjY6pMUWYh4</string>
+    <string name="title_activity_maps">Map</string>
+    <string name="title_activity_home">Home</string>
+    <string name="title_activity_choice">Choice</string>
+    <string name="title_activity_walker">Walker</string>
+    <string name="title_activity_angel">Angel</string>
+</resources>
