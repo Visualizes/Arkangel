@@ -43,4 +43,5 @@ public class Path {
     public void setDestination(Location destination) {
         this.destination = destination;
     }
+
 }

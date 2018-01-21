@@ -28,8 +28,6 @@ public abstract class AsyncGetLocation extends AsyncTask<FusedLocationProviderCl
             }
         }
 
-        Utility.firstRecursiveIteration = false;
-
         return null;
     }
 

@@ -8,6 +8,7 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Criteria;
 import android.location.LocationListener;
@@ -126,7 +127,6 @@ public class HomeActivity extends AppCompatActivity {
 
         homeAdapter.notifyDataSetChanged();
 
-
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
         DatabaseReference mUserWalkerReference = FirebaseDatabase.getInstance().getReference("users")
@@ -136,10 +136,12 @@ public class HomeActivity extends AppCompatActivity {
         ValueEventListener singleListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+
                 paths.clear();
                 for (DataSnapshot child : dataSnapshot.getChildren()) {
                     paths.add(new Path(child.getKey(), child.child("home").getValue(Location.class),
                             (child.child("destination").getValue(Location.class))));
+
                 }
                 Utility.paths = paths;
                 homeAdapter.notifyDataSetChanged();
@@ -187,7 +189,8 @@ public class HomeActivity extends AppCompatActivity {
                         if (data.getValue().toString().toLowerCase().equals("false")) {
                             continue outerLoop;
                         }
-                        openNotification(message, path.getKey().toString());
+                        openNotification(message, path.getKey().toString(),
+                                data.getValue().toString().toLowerCase().equals("error"));
                     }
                 }
             }
@@ -275,7 +278,7 @@ public class HomeActivity extends AppCompatActivity {
         }
     }
 
-    private void openNotification(String message, String key) {
+    private void openNotification(String message, String key, boolean isSomethingWrong) {
         System.out.println("OPEN NOTIFICATION");
         System.out.println(message);
         NotificationCompat.Builder mBuilder =

@@ -2,11 +2,13 @@ package com.visual.android.arkangel;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.location.LocationManager;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -29,17 +31,31 @@ public class RecursiveLocationTracker extends AsyncGetLocation {
     private static Path activePath;
     private static Location activeLocation;
     private static boolean userIsAtHome = false;
+    private static boolean userIsOnWayHome = false;
     private static boolean userIsAtDest = false;
+    private static boolean userIsOnWayDest = false;
+    private static double bearing;
+    private static int strikes = 0;
+    private static boolean strikesFlagged = false;
+    private SharedPreferences sharedPref;
 
     public RecursiveLocationTracker(FusedLocationProviderClient mFusedLocationProviderClient,
                                     Activity context) {
         this.mFusedLocationProviderClient = mFusedLocationProviderClient;
         this.context = new WeakReference<>(context);
+        sharedPref = context.getPreferences(Context.MODE_PRIVATE);
     }
 
     @Override
     protected void onPostExecute(final android.location.Location currentLocation) {
         super.onPostExecute(currentLocation);
+
+        final String activeID = sharedPref.getString("active-path", null);
+        System.out.println("id: " + activeID);
+        if (activeID == null) {
+            recursivelyExecuteScript();
+            return;
+        }
 
         System.out.println("ON POST EXECUTE");
         try {
@@ -53,6 +69,10 @@ public class RecursiveLocationTracker extends AsyncGetLocation {
                                 double currentAccuracy = location.getAccuracy();
 
                                 for (final Path path : Utility.paths) {
+                                    if (!path.getId().equals(activeID)) {
+                                        continue;
+                                    }
+
                                     Location dest = path.getDestination();
                                     System.out.println(dest.getName());
                                     double destLat = dest.getLat();
@@ -73,36 +93,71 @@ public class RecursiveLocationTracker extends AsyncGetLocation {
                                     android.location.Location.distanceBetween(homeLat, homeLng, currentLat, currentLng, homeResults);
 
                                     double radius = 200 + currentAccuracy;
+//                                    System.out.println("Radius: " + radius);
+//                                    System.out.println("Home: " + homeResults[0]);
+//                                    System.out.println("Dest: " + destResults[0]);
 
                                     if (destResults[0] < radius && !RecursiveLocationTracker.userIsAtDest) {
-                                        RecursiveLocationTracker.userIsAtDest = true;
+                                        // if user enters dest radius
+                                        System.out.println("User entered DEST");
+                                        RecursiveLocationTracker.userIsOnWayDest = false; // they're not on the way to dest since they're already there
+                                        RecursiveLocationTracker.userIsAtDest = true; // they're at dest
                                         RecursiveLocationTracker.activeLocation = path.getDestination();
-                                        notifyAngel(path, "arrived at ");
+                                        RecursiveLocationTracker.activePath = path;
+                                        notifyAngel(path, "arrived at ", false);
                                     } else if (destResults[0] > radius && RecursiveLocationTracker.userIsAtDest) {
-                                        RecursiveLocationTracker.userIsAtDest = false;
-                                        RecursiveLocationTracker.activeLocation = null;
-                                        notifyAngel(path, "departed ");
+                                        // if user leaves dest radius
+                                        System.out.println("User left DEST");
+                                        RecursiveLocationTracker.userIsAtDest = false; // they're no longer at dest
+                                        RecursiveLocationTracker.userIsOnWayHome = true; // they're on the way home
+                                        RecursiveLocationTracker.activeLocation = path.getDestination();
+                                        RecursiveLocationTracker.activePath = path;
+                                        notifyAngel(path, "departed ", false);
                                     } else if (homeResults[0] < radius && !RecursiveLocationTracker.userIsAtHome) {
-                                        RecursiveLocationTracker.userIsAtHome = true;
+                                        // if user enters home radius
+                                        System.out.println("User entered HOME");
+                                        RecursiveLocationTracker.userIsOnWayHome = false; // they're not on the way home since they're already there
+                                        RecursiveLocationTracker.userIsAtHome = true; // they're home
                                         RecursiveLocationTracker.activeLocation = path.getHome();
-                                        notifyAngel(path, "arrived at ");
+                                        RecursiveLocationTracker.activePath = path;
+                                        notifyAngel(path, "arrived at ", false);
 
                                     } else if (homeResults[0] > radius && RecursiveLocationTracker.userIsAtHome) {
-                                        RecursiveLocationTracker.userIsAtHome = false;
-                                        RecursiveLocationTracker.activeLocation = null;
-                                        notifyAngel(path, "departed ");
+                                        // if user leaves home
+                                        System.out.println("User left HOME");
+                                        RecursiveLocationTracker.userIsAtHome = false; // they're no longer home
+                                        RecursiveLocationTracker.userIsOnWayDest = true; // they're on the way to dest
+                                        RecursiveLocationTracker.activeLocation = path.getHome();
+                                        RecursiveLocationTracker.activePath = path;
+                                        notifyAngel(path, "departed ", false);
                                     } else {
                                         System.out.println("NOT IN");
                                     }
                                 }
 
-                                Utility.recursiveLocationTracker = new RecursiveLocationTracker(mFusedLocationProviderClient, context.get());
-                                Utility.recursiveLocationTracker.execute();
+                                if (RecursiveLocationTracker.activePath != null) {
+                                    Location home = RecursiveLocationTracker.activePath.getHome();
+                                    Location dest = RecursiveLocationTracker.activePath.getDestination();
+
+                                    if (userIsOnWayDest && !strikesFlagged) {
+                                        double bearing = bearing(home.getLat(), home.getLng(), dest.getLat(), dest.getLng());
+                                        double userBearing = bearing(currentLat, currentLng, dest.getLat(), dest.getLng());
+                                        calculateStrikes(bearing, userBearing);
+                                    }
+
+                                    if (userIsOnWayHome && !strikesFlagged) {
+                                        double bearing = bearing(dest.getLat(), dest.getLng(), home.getLat(), home.getLng());
+                                        double userBearing = bearing(currentLat, currentLng, home.getLat(), home.getLng());
+                                        calculateStrikes(bearing, userBearing);
+                                    }
+                                }
+
+                                Utility.firstRecursiveIteration = false;
+                                recursivelyExecuteScript();
 
                             } else {
                                 System.out.println("NULL");
-                                Utility.recursiveLocationTracker = new RecursiveLocationTracker(mFusedLocationProviderClient, context.get());
-                                Utility.recursiveLocationTracker.execute();
+                                recursivelyExecuteScript();
                                 // current location is null
                             }
                         }
@@ -111,27 +166,51 @@ public class RecursiveLocationTracker extends AsyncGetLocation {
             Log.e("Exception: %s", e.getMessage());
         }
 
+    }
 
-
+    private void recursivelyExecuteScript() {
+        Utility.recursiveLocationTracker = new RecursiveLocationTracker(mFusedLocationProviderClient, context.get());
+        Utility.recursiveLocationTracker.execute();
 
     }
 
-    private boolean compareRadiusDistance(double radius, float homeDistance, float destDistance) {
-        if (RecursiveLocationTracker.userIsAtHome || RecursiveLocationTracker.userIsAtDest) {
-            // we want to know if they have left the zone they're in
-            if (destDistance > radius) { // they left the destination
-                return true;
-            } else if (homeDistance > radius) {
-                return true;
-            } else {
-                return false;
+    private void calculateStrikes(double bearing, double userBearing) {
+        double bearingCap = bearing + 60;
+        double bearingMin = bearing - 60;
+        if (bearingCap > 0) {
+            bearingCap -= 360;
+        }
+        if (bearingMin < 0) {
+            bearingMin += 360;
+        }
+        if (userBearing > bearingCap || userBearing < bearingMin) {
+            RecursiveLocationTracker.strikes++;
+            if (RecursiveLocationTracker.strikes == 3) {
+                RecursiveLocationTracker.strikesFlagged = true;
+                notifyAngel(activePath, null, true);
             }
         } else {
-            return destDistance < radius || homeDistance < radius;
+            RecursiveLocationTracker.strikes--;
+            if (RecursiveLocationTracker.strikes < 0) {
+                RecursiveLocationTracker.strikes = 0;
+            }
         }
     }
 
-    private void notifyAngel(final Path path, final String arriveDepart) {
+    private double bearing(double lat1, double lon1, double lat2, double lon2){
+        double latitude1 = Math.toRadians(lat1);
+        double latitude2 = Math.toRadians(lat2);
+        double longDiff= Math.toRadians(lon2 - lon1);
+        double y= Math.sin(longDiff)*Math.cos(latitude2);
+        double x=Math.cos(latitude1)*Math.sin(latitude2)-Math.sin(latitude1)*Math.cos(latitude2)*Math.cos(longDiff);
+        return (Math.toDegrees(Math.atan2(y, x))+360)%360;
+    }
+
+    private void notifyAngel(final Path path, final String arriveDepart, final boolean isSomethingWrong) {
+        if (Utility.firstRecursiveIteration) {
+//            return;
+        }
+
         final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
         DatabaseReference mUserWalkerReference = FirebaseDatabase.getInstance().getReference("paths")
@@ -146,14 +225,23 @@ public class RecursiveLocationTracker extends AsyncGetLocation {
                             .child("angel-paths")
                             .child(path.getId())
                             .child("notify")
-                            .setValue(true);
+                            .setValue((isSomethingWrong ? "error" : true));
+
+
+                    String message;
+                    if (!isSomethingWrong) {
+                        message = user.getDisplayName() + " has " + arriveDepart +
+                                RecursiveLocationTracker.activeLocation.getName();
+                    } else {
+                        message = "Arkangel has detected an abnormally in the direction " + user.getDisplayName() +
+                                "is taking.";
+                    }
 
                     mUserReferences.child(key)
                             .child("angel-paths")
                             .child(path.getId())
                             .child("message")
-                            .setValue(user.getDisplayName() + " has " + arriveDepart +
-                                    RecursiveLocationTracker.activeLocation.getName());
+                            .setValue(message);
                 }
             }
 
