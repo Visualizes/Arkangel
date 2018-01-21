@@ -90,6 +90,7 @@ public class HomeActivity extends AppCompatActivity {
             // Construct a FusedLocationProviderClient.
             mFusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
+
         } else {
             System.out.println("BRUH IS THIS NULL?");
             locationManager = null;
@@ -209,6 +210,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     public boolean checkLocationPermission() {
+
         if (ContextCompat.checkSelfPermission(this,
                 android.Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
