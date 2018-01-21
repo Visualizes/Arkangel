@@ -104,20 +104,20 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
-        Button mSignOutButton = findViewById(R.id.sign_out);
-        mSignOutButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                AuthUI.getInstance()
-                        .signOut(HomeActivity.this)
-                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                            public void onComplete(@NonNull Task<Void> task) {
-                                // ...
-                                startActivity(new Intent(HomeActivity.this, SignInActivity.class));
-                            }
-                        });
-            }
-        });
+//        Button mSignOutButton = findViewById(R.id.sign_out);
+//        mSignOutButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                AuthUI.getInstance()
+//                        .signOut(HomeActivity.this)
+//                        .addOnCompleteListener(new OnCompleteListener<Void>() {
+//                            public void onComplete(@NonNull Task<Void> task) {
+//                                // ...
+//                                startActivity(new Intent(HomeActivity.this, SignInActivity.class));
+//                            }
+//                        });
+//            }
+//        });
 
         paths = new ArrayList<>();
 //        paths.add(new Path(new Location("1", "2", "Test", 4, 2),
@@ -306,5 +306,17 @@ public class HomeActivity extends AppCompatActivity {
         mUserAngelReference.child("notify").setValue(false);
         mUserAngelReference.child("message").setValue("");
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        AuthUI.getInstance()
+                .signOut(HomeActivity.this)
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    public void onComplete(@NonNull Task<Void> task) {
+                        // ...
+                        startActivity(new Intent(HomeActivity.this, SignInActivity.class));
+                    }
+                });
     }
 }

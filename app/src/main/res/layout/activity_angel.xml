@@ -1,27 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:background="@drawable/gradient_blue_grey"
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <EditText
+        android:layout_margin="16dp"
         android:id="@+id/code"
         android:hint="Enter code"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
     
     <LinearLayout
+        android:gravity="bottom"
+        android:layout_weight="1"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
         <Button
+            android:textColor="@color/white"
+            android:background="@drawable/activated_button"
             android:id="@+id/cancel_button"
             android:text="Cancel"
             android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="wrap_content" />
         <Button
+            android:textColor="@color/white"
+            android:background="@drawable/activated_button"
             android:id="@+id/okay_button"
             android:text="Okay"
             android:layout_weight="1"

@@ -70,7 +70,7 @@
         </LinearLayout>
 
         <com.suke.widget.SwitchButton
-            app:sb_checked_color="@color/colorPrimary"
+            app:sb_checked_color="@color/colorAccent"
             app:sb_show_indicator="false"
             app:sb_background="@color/grey600"
             android:id="@+id/switch_button"
@@ -80,7 +80,8 @@
     </LinearLayout>
 
     <TextView
-        android:textColor="@color/colorPrimary"
+        android:textStyle="bold"
+        android:textColor="@color/colorAccent"
         android:textSize="22sp"
         android:gravity="center"
         android:text="test"

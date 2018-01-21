@@ -5,53 +5,58 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView
-        android:text="Code: ABC123"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
 
     <TextView
+        android:layout_marginTop="16dp"
+        android:textStyle="bold"
+        android:textColor="@color/colorAccent"
         android:id="@+id/code"
-        android:textSize="24dp"
+        android:layout_marginBottom="32sp"
+        android:textSize="36sp"
         android:gravity="center"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <TextView
-        android:text="Home:"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
 
     <EditText
+        android:hint="Home"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="32dp"
         android:id="@+id/home_edit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
-    <TextView
-        android:text="Destination:"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
-
+2
     <EditText
+        android:hint="Destination"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="16dp"
         android:id="@+id/destination_edit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
     <LinearLayout
+        android:gravity="bottom"
+        android:layout_weight="1"
         android:orientation="horizontal"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
         <Button
+            android:background="@drawable/activated_button"
             android:id="@+id/cancel_button"
             android:text="Cancel"
+            android:textColor="@color/white"
             android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="wrap_content" />
 
         <Button
+            android:background="@drawable/activated_button"
             android:id="@+id/save_button"
             android:text="Save"
+            android:textColor="@color/white"
             android:layout_weight="1"
             android:layout_width="0dp"
             android:layout_height="wrap_content" />

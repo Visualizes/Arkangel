@@ -68,6 +68,10 @@ public class RecursiveLocationTracker extends AsyncGetLocation {
                         @Override
                         public void onSuccess(@NonNull android.location.Location location) {
                             if (location != null) {
+                                DatabaseReference mDebugReference =
+                                        FirebaseDatabase.getInstance().getReference("debug");
+
+
                                 double currentLat = location.getLatitude();
                                 double currentLng = location.getLongitude();
                                 double currentAccuracy = location.getAccuracy();
@@ -82,13 +86,19 @@ public class RecursiveLocationTracker extends AsyncGetLocation {
                                     double destLat = dest.getLat();
                                     double destLng = dest.getLng();
 
-                                    float[] destResults = new float[5];
+                                    System.out.println("Dest Lat: " + destLat);
+                                    System.out.println("Dest Lng: " + destLng);
+
+                                    final float[] destResults = new float[5];
 
                                     Location home = path.getHome();
                                     double homeLat = home.getLat();
                                     double homeLng = home.getLng();
 
-                                    float[] homeResults = new float[5];
+                                    System.out.println("Home Lat: " + homeLat);
+                                    System.out.println("Home Lng: " + homeLng);
+
+                                    final float[] homeResults = new float[5];
 
                                     // The computed distance is stored in results[0].
                                     // If results has length 2 or greater, the initial bearing is stored in results[1].
@@ -96,32 +106,35 @@ public class RecursiveLocationTracker extends AsyncGetLocation {
                                     android.location.Location.distanceBetween(destLat, destLng, currentLat, currentLng, destResults);
                                     android.location.Location.distanceBetween(homeLat, homeLng, currentLat, currentLng, homeResults);
 
+//                                    ValueEventListener postListener = new ValueEventListener() {
+//                                        @Override
+//                                        public void onDataChange(DataSnapshot dataSnapshot) {
+//                                            for (DataSnapshot data : dataSnapshot.getChildren()) {
+//                                                System.out.println(data.getKey());
+//                                                System.out.println(data.getValue());
+//                                                if (data.getKey().equals("0")) {
+//                                                    homeResults[0] = Float.parseFloat(data.getValue().toString());
+//                                                } else {
+//                                                    destResults[0] = Float.parseFloat(data.getValue().toString());
+//                                                }
+//                                            }
+//                                        }
+//
+//                                        @Override
+//                                        public void onCancelled(DatabaseError databaseError) {
+//                                            // Getting Post failed, log a message
+//                                            Log.w("TAG", "loadPost:onCancelled", databaseError.toException());
+//                                            // ...
+//                                        }
+//                                    };
+//
+//                                    mDebugReference.child("distances").addListenerForSingleValueEvent(postListener);
+
                                     double radius = 100 + currentAccuracy;
 //                                    System.out.println("Radius: " + radius);
 //                                    System.out.println("Home: " + homeResults[0]);
 //                                    System.out.println("Dest: " + destResults[0]);
-                                    final Toast mToastToShow = Toast.makeText(context.get(), "Radius: " + radius +
-                                                    "\nDistance to Home: " + homeResults[0] +
-                                                    "\nDistance to Dest: " + destResults[0] +
-                                                    "\nCurrent Lat: " + currentLat +
-                                                    "\nCurrent Lng: " + currentLng +
-                                                    "\nStrikes: " + RecursiveLocationTracker.strikes,
-                                            Toast.LENGTH_LONG);
 
-                                    // Set the countdown to display the toast
-                                    CountDownTimer toastCountDown;
-                                    toastCountDown = new CountDownTimer(8000, 1000 /*Tick duration*/) {
-                                        public void onTick(long millisUntilFinished) {
-                                            mToastToShow.show();
-                                        }
-                                        public void onFinish() {
-                                            mToastToShow.cancel();
-                                        }
-                                    };
-
-                                    // Show the toast and starts the countdown
-                                    mToastToShow.show();
-                                    toastCountDown.start();
 
                                     if (destResults[0] < radius && !RecursiveLocationTracker.userIsAtDest) {
                                         // if user enters dest radius
@@ -159,24 +172,52 @@ public class RecursiveLocationTracker extends AsyncGetLocation {
                                     } else {
                                         System.out.println("NOT IN");
                                     }
+
+                                    final Toast mToastToShow = Toast.makeText(context.get(), "Radius: " + radius +
+                                                    "\nDistance to Home: " + homeResults[0] +
+                                                    "\nDistance to Dest: " + destResults[0] +
+                                                    "\nCurrent Lat: " + currentLat +
+                                                    "\nCurrent Lng: " + currentLng +
+                                                    "\nIs user at dest? " + RecursiveLocationTracker.userIsAtDest +
+                                                    "\nIs user at home? " + RecursiveLocationTracker.userIsAtHome +
+                                                    "\nIs user on the way home? " + RecursiveLocationTracker.userIsOnWayHome +
+                                                    "\nIs user on the way dest? " + RecursiveLocationTracker.userIsOnWayDest +
+                                                    "\nStrikes: " + RecursiveLocationTracker.strikes,
+                                            Toast.LENGTH_LONG);
+
+                                    // Set the countdown to display the toast
+                                    CountDownTimer toastCountDown;
+                                    toastCountDown = new CountDownTimer(8000, 1000 /*Tick duration*/) {
+                                        public void onTick(long millisUntilFinished) {
+                                            mToastToShow.show();
+                                        }
+                                        public void onFinish() {
+                                            mToastToShow.cancel();
+                                        }
+                                    };
+
+                                    // Show the toast and starts the countdown
+                                    mToastToShow.show();
+                                    toastCountDown.start();
+
                                 }
 
-                                if (RecursiveLocationTracker.activePath != null) {
-                                    Location home = RecursiveLocationTracker.activePath.getHome();
-                                    Location dest = RecursiveLocationTracker.activePath.getDestination();
-
-                                    if (userIsOnWayDest && !strikesFlagged) {
-                                        double bearing = bearing(home.getLat(), home.getLng(), dest.getLat(), dest.getLng());
-                                        double userBearing = bearing(currentLat, currentLng, dest.getLat(), dest.getLng());
-                                        calculateStrikes(bearing, userBearing);
-                                    }
-
-                                    if (userIsOnWayHome && !strikesFlagged) {
-                                        double bearing = bearing(dest.getLat(), dest.getLng(), home.getLat(), home.getLng());
-                                        double userBearing = bearing(currentLat, currentLng, home.getLat(), home.getLng());
-                                        calculateStrikes(bearing, userBearing);
-                                    }
-                                }
+//                                if (RecursiveLocationTracker.activePath != null) {
+//                                    Location home = RecursiveLocationTracker.activePath.getHome();
+//                                    Location dest = RecursiveLocationTracker.activePath.getDestination();
+//
+//                                    if (userIsOnWayDest && !strikesFlagged) {
+//                                        double bearing = bearing(home.getLat(), home.getLng(), dest.getLat(), dest.getLng());
+//                                        double userBearing = bearing(currentLat, currentLng, dest.getLat(), dest.getLng());
+//                                        calculateStrikes(bearing, userBearing);
+//                                    }
+//
+//                                    if (userIsOnWayHome && !strikesFlagged) {
+//                                        double bearing = bearing(dest.getLat(), dest.getLng(), home.getLat(), home.getLng());
+//                                        double userBearing = bearing(currentLat, currentLng, home.getLat(), home.getLng());
+//                                        calculateStrikes(bearing, userBearing);
+//                                    }
+//                                }
 
                                 Utility.firstRecursiveIteration = false;
                                 recursivelyExecuteScript();
