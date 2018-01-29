@@ -173,32 +173,32 @@ public class RecursiveLocationTracker extends AsyncGetLocation {
                                         System.out.println("NOT IN");
                                     }
 
-                                    final Toast mToastToShow = Toast.makeText(context.get(), "Radius: " + radius +
-                                                    "\nDistance to Home: " + homeResults[0] +
-                                                    "\nDistance to Dest: " + destResults[0] +
-                                                    "\nCurrent Lat: " + currentLat +
-                                                    "\nCurrent Lng: " + currentLng +
-                                                    "\nIs user at dest? " + RecursiveLocationTracker.userIsAtDest +
-                                                    "\nIs user at home? " + RecursiveLocationTracker.userIsAtHome +
-                                                    "\nIs user on the way home? " + RecursiveLocationTracker.userIsOnWayHome +
-                                                    "\nIs user on the way dest? " + RecursiveLocationTracker.userIsOnWayDest +
-                                                    "\nStrikes: " + RecursiveLocationTracker.strikes,
-                                            Toast.LENGTH_LONG);
-
-                                    // Set the countdown to display the toast
-                                    CountDownTimer toastCountDown;
-                                    toastCountDown = new CountDownTimer(8000, 1000 /*Tick duration*/) {
-                                        public void onTick(long millisUntilFinished) {
-                                            mToastToShow.show();
-                                        }
-                                        public void onFinish() {
-                                            mToastToShow.cancel();
-                                        }
-                                    };
-
-                                    // Show the toast and starts the countdown
-                                    mToastToShow.show();
-                                    toastCountDown.start();
+//                                    final Toast mToastToShow = Toast.makeText(context.get(), "Radius: " + radius +
+//                                                    "\nDistance to Home: " + homeResults[0] +
+//                                                    "\nDistance to Dest: " + destResults[0] +
+//                                                    "\nCurrent Lat: " + currentLat +
+//                                                    "\nCurrent Lng: " + currentLng +
+//                                                    "\nIs user at dest? " + RecursiveLocationTracker.userIsAtDest +
+//                                                    "\nIs user at home? " + RecursiveLocationTracker.userIsAtHome +
+//                                                    "\nIs user on the way home? " + RecursiveLocationTracker.userIsOnWayHome +
+//                                                    "\nIs user on the way dest? " + RecursiveLocationTracker.userIsOnWayDest +
+//                                                    "\nStrikes: " + RecursiveLocationTracker.strikes,
+//                                            Toast.LENGTH_LONG);
+//
+//                                    // Set the countdown to display the toast
+//                                    CountDownTimer toastCountDown;
+//                                    toastCountDown = new CountDownTimer(8000, 1000 /*Tick duration*/) {
+//                                        public void onTick(long millisUntilFinished) {
+//                                            mToastToShow.show();
+//                                        }
+//                                        public void onFinish() {
+//                                            mToastToShow.cancel();
+//                                        }
+//                                    };
+//
+//                                    // Show the toast and starts the countdown
+//                                    mToastToShow.show();
+//                                    toastCountDown.start();
 
                                 }
 

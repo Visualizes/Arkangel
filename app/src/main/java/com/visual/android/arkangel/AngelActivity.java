@@ -9,6 +9,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -49,8 +50,11 @@ public class AngelActivity extends AppCompatActivity {
                         public void onDataChange(DataSnapshot dataSnapshot) {
                             if (dataSnapshot.getValue() != null) {
                                 mPathsReference.child(user.getUid()).setValue(0);
-                                mUserReference.child("notify").setValue(false);
+//                                mUserReference.child("notify").setValue(false);
                                 mUserReference.child("message").setValue("");
+                                Toast.makeText(AngelActivity.this,
+                                        "Success!",
+                                        Toast.LENGTH_SHORT).show();
                                 startActivity(new Intent(AngelActivity.this, HomeActivity.class));
                             } else {
                                 System.out.println("DOES NOT EXIST");

@@ -1,20 +1,11 @@
 package com.visual.android.arkangel;
 
-import android.*;
-import android.Manifest;
-import android.app.Activity;
-import android.app.Notification;
 import android.app.NotificationManager;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.location.Criteria;
-import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
@@ -25,19 +16,15 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ListView;
 
 import com.firebase.ui.auth.AuthUI;
-import com.firebase.ui.auth.IdpResponse;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.location.places.GeoDataClient;
-import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.PlaceDetectionClient;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -48,7 +35,6 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -103,6 +89,14 @@ public class HomeActivity extends AppCompatActivity {
                         new Intent(HomeActivity.this, ChoiceActivity.class));
             }
         });
+//        fab.setOnLongClickListener(new View.OnLongClickListener() {
+//            @Override
+//            public boolean onLongClick(View view) {
+//                startActivity(
+//                        new Intent(HomeActivity.this, DebugActivity.class));
+//                return false;
+//            }
+//        });
 
 //        Button mSignOutButton = findViewById(R.id.sign_out);
 //        mSignOutButton.setOnClickListener(new View.OnClickListener() {
@@ -169,43 +163,48 @@ public class HomeActivity extends AppCompatActivity {
             }
         };
 
+
+
         DatabaseReference mUserAngelReference = FirebaseDatabase.getInstance().getReference("users")
                 .child(user.getUid()).child("angel-paths");
 
-        ValueEventListener postListener = new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                System.out.println(dataSnapshot.getValue());
-                outerLoop:
-                for (DataSnapshot path : dataSnapshot.getChildren()) {
-                    System.out.println("=====================================================");
-                    String message = null;
-                    System.out.println(path);
-                    for (DataSnapshot data : path.getChildren()) {
-                        System.out.println(data.getValue());
-                        if (message == null) {
-                            message = data.getValue().toString();
-                            continue;
-                        }
-                        if (data.getValue().toString().toLowerCase().equals("false")) {
-                            continue outerLoop;
-                        }
-                        openNotification(message, path.getKey().toString(),
-                                data.getValue().toString().toLowerCase().equals("error"));
-                    }
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-                // Getting Post failed, log a message
-                Log.w("TAG", "loadPost:onCancelled", databaseError.toException());
-                // ...
-            }
-        };
+//        ValueEventListener postListener = new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot) {
+//                System.out.println(dataSnapshot.getValue());
+//                outerLoop:
+//                for (DataSnapshot path : dataSnapshot.getChildren()) {
+//                    System.out.println("=====================================================");
+//                    String message = null;
+//                    System.out.println(path);
+//                    for (DataSnapshot data : path.getChildren()) {
+//                        System.out.println(data.getValue());
+//                        if (message == null) {
+//                            message = data.getValue().toString();
+//                            continue;
+//                        }
+//                        if (data.getValue().toString().toLowerCase().equals("false")) {
+//                            continue outerLoop;
+//                        }
+//                        openNotification(message, path.getKey().toString(),
+//                                data.getValue().toString().toLowerCase().equals("error"));
+//                    }
+//                }
+//            }
+//
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {
+//                // Getting Post failed, log a message
+//                Log.w("TAG", "loadPost:onCancelled", databaseError.toException());
+//
+//                // ...
+//            }
+//        };
 
         mUserWalkerReference.addListenerForSingleValueEvent(singleListener);
-        mUserAngelReference.addValueEventListener(postListener);
+//        mUserAngelReference.addValueEventListener(postListener);
+        System.out.println("SERVE");
+        startService(new Intent(HomeActivity.this, FirebaseService.class));
 
     }
 
@@ -278,34 +277,6 @@ public class HomeActivity extends AppCompatActivity {
                 return;
             }
         }
-    }
-
-    private void openNotification(String message, String key, boolean isSomethingWrong) {
-        System.out.println("OPEN NOTIFICATION");
-        System.out.println(message);
-        NotificationCompat.Builder mBuilder =
-                new NotificationCompat.Builder(this)
-                        .setSmallIcon(R.mipmap.ic_launcher_round)
-                        .setContentTitle("Arkangel")
-                        .setContentText(message);
-
-        // Sets an ID for the notification
-        int mNotificationId = 001;
-        // Gets an instance of the NotificationManager service
-        NotificationManager mNotifyMgr =
-                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        // Builds the notification and issues it.
-        mNotifyMgr.notify(mNotificationId, mBuilder.build());
-
-
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        DatabaseReference mUserAngelReference = FirebaseDatabase.getInstance()
-                .getReference("users").child(user.getUid()).child("angel-paths")
-                .child(key);
-
-        mUserAngelReference.child("notify").setValue(false);
-        mUserAngelReference.child("message").setValue("");
-
     }
 
     @Override
